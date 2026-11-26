@@ -64,6 +64,8 @@ a {{color: {YELLOW};}}
 .hero p {{color: {LIGHT_GREY}; margin: .4rem 0 0 0; font-size: 1rem;}}
 .hero .tag {{display:inline-block; background:{YELLOW}; color:#111111; padding:3px 8px; border-radius:4px;
             font-size:.68rem; font-weight:750; letter-spacing:.08em; margin-bottom:.55rem;}}
+.impact-note {{background:#1b1b1b; color:{LIGHT_GREY}; border-left:3px solid {YELLOW};
+               padding:.75rem 1rem; border-radius:6px; margin:.6rem 0 1rem;}}
 .kpi {{background: #1b1b1b; color: {PAPER}; border-radius: 10px; padding: .9rem 1rem;
        border: 1px solid #303030; box-shadow: none; height: 100%;}}
 .kpi .label {{font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: {LIGHT_GREY}; font-weight: 650;}}
@@ -673,6 +675,106 @@ def page_measure() -> None:
     st.caption("The estimate assumes independent observations. Repeated observations from the same crews may require a larger sample.")
 
 
+def page_impact() -> None:
+    hero("Explore business impact",
+         "See how labour spend, completed output and overtime relate to productivity across the filtered data.")
+    filter_note()
+
+    cost_col = "Estimated_Labour_Cost_GBP"
+    total_spend = D[cost_col].sum()
+    below_target_spend = D.loc[~D["Met_Target"], cost_col].sum()
+    overtime_hours = D["Overtime_Hours"].sum()
+    completed_units = D["Completed_Quantity"].sum(min_count=1)
+    cost_per_unit = total_spend / completed_units if pd.notna(completed_units) and completed_units > 0 else None
+
+    c = st.columns(4)
+    kpi(c[0], "Estimated labour spend", f"£{total_spend / 1e6:.2f}m", "in the current view", "accent")
+    kpi(c[1], "Spend on below-target days", f"£{below_target_spend / 1e6:.2f}m",
+        f"{below_target_spend / total_spend:.1%} of spend" if total_spend else "no recorded spend", "gold", GREY)
+    kpi(c[2], "Overtime hours", f"{overtime_hours:,.0f}", "recorded in the current view", "navy", GREY)
+    kpi(c[3], "Labour cost per completed unit",
+        f"£{cost_per_unit:,.2f}" if cost_per_unit is not None else "—",
+        "total labour spend ÷ completed units", "navy", GREY)
+
+    st.markdown(
+        '<div class="impact-note"><strong>Interpretation:</strong> Spend on below-target days is the labour cost '
+        "recorded on those observations. It is not a measure of avoidable loss or guaranteed savings.</div>",
+        unsafe_allow_html=True,
+    )
+
+    dim = st.selectbox(
+        "Break down by",
+        ["Work_Package", "Crew_ID", "Site_Region", "Project_Type"],
+        format_func=A.pretty,
+    )
+    impact = D.assign(Below_Target_Spend=np.where(~D["Met_Target"], D[cost_col], 0.0))
+    grouped = impact.groupby(dim, observed=True, dropna=False).agg(
+        Observations=("Record_ID", "count"),
+        Labour_Spend=(cost_col, "sum"),
+        Below_Target_Spend=("Below_Target_Spend", "sum"),
+        Overtime_Hours=("Overtime_Hours", "sum"),
+        Completed_Units=("Completed_Quantity", "sum"),
+        Hit_Rate=("Met_Target", "mean"),
+    )
+    grouped["Cost_Per_Unit"] = grouped["Labour_Spend"] / grouped["Completed_Units"].where(
+        grouped["Completed_Units"] > 0
+    )
+    grouped["Hit_Rate_pct"] = grouped["Hit_Rate"] * 100
+    grouped = grouped.drop(columns="Hit_Rate")
+    grouped = grouped.sort_values("Below_Target_Spend", ascending=False)
+    top_groups = grouped.head(10).index.tolist()
+
+    chart_data = impact.assign(
+        Outcome=np.where(D["Met_Target"], "At / above target", "Below target")
+    ).groupby([dim, "Outcome"], observed=True, dropna=False)[cost_col].sum().rename(
+        "Labour spend (£)"
+    ).reset_index()
+    chart_data = chart_data[chart_data[dim].isin(top_groups)]
+    fig = px.bar(
+        chart_data,
+        x="Labour spend (£)",
+        y=dim,
+        color="Outcome",
+        orientation="h",
+        color_discrete_map={"At / above target": GREY, "Below target": YELLOW},
+        category_orders={dim: top_groups[::-1]},
+        title=f"Labour spend by delivery outcome and {A.pretty(dim).lower()}",
+        labels={dim: "", "Labour spend (£)": "Estimated labour spend (£)"},
+    )
+    fig.update_layout(barmode="stack", height=max(340, 38 * len(top_groups)), legend_title=None)
+    fig.update_xaxes(tickprefix="£", tickformat=",.0f")
+    fig.update_yaxes(categoryorder="array", categoryarray=top_groups[::-1])
+    st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "Showing up to 10 groups ranked by spend on below-target observations. "
+        "The summary below uses the full filtered view."
+    )
+
+    summary = grouped.reset_index().rename(columns={
+        dim: A.pretty(dim),
+        "Observations": "Observations",
+        "Labour_Spend": "Estimated labour spend (£)",
+        "Below_Target_Spend": "Spend on below-target days (£)",
+        "Overtime_Hours": "Overtime hours",
+        "Completed_Units": "Completed units",
+        "Hit_Rate_pct": "Target hit rate (%)",
+        "Cost_Per_Unit": "Labour cost per unit (£)",
+    })
+    st.dataframe(
+        summary,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Estimated labour spend (£)": st.column_config.NumberColumn(format="£%.0f"),
+            "Spend on below-target days (£)": st.column_config.NumberColumn(format="£%.0f"),
+            "Overtime hours": st.column_config.NumberColumn(format="%.0f"),
+            "Completed units": st.column_config.NumberColumn(format="%.1f"),
+            "Target hit rate (%)": st.column_config.NumberColumn(format="%.1f%%"),
+            "Labour cost per unit (£)": st.column_config.NumberColumn(format="£%.2f"),
+        },
+    )
+
+
 def page_data() -> None:
     hero("Data, methods & limitations", "Review the source data, analytical methods and assumptions.")
     c1, c2 = st.columns([1, 1.3])
@@ -724,6 +826,7 @@ pg = st.navigation([
     st.Page(page_summary, title="Overview", icon=":material/dashboard:", default=True),
     st.Page(page_gaps, title="Compare patterns", icon=":material/compare_arrows:", url_path="compare"),
     st.Page(page_drivers, title="Explore factors", icon=":material/query_stats:", url_path="factors"),
+    st.Page(page_impact, title="Business impact", icon=":material/payments:", url_path="impact"),
     st.Page(page_scenarios, title="Scenario explorer", icon=":material/tune:", url_path="scenarios"),
     st.Page(page_measure, title="Variation & study size", icon=":material/monitoring:", url_path="measure"),
     st.Page(page_data, title="Data & methods", icon=":material/database:", url_path="data"),
