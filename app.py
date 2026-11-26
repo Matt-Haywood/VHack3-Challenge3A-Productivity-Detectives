@@ -55,7 +55,7 @@ st.markdown(
 }}
 html, body, .stApp, [data-testid="stAppViewContainer"] {{background: #111111; color: {PAPER};}}
 [data-testid="stHeader"] {{background: #111111;}}
-.block-container {{padding-top: 2rem; padding-bottom: 3rem;}}
+.block-container {{padding-top: 4rem; padding-bottom: 3rem;}}
 h1, h2, h3, h4 {{color: {PAPER}; letter-spacing: -.02em;}}
 a {{color: {YELLOW};}}
 .hero {{background: #1b1b1b; color: {PAPER}; padding: 1.45rem 1.75rem; border: 1px solid #303030;
@@ -74,7 +74,7 @@ a {{color: {YELLOW};}}
 .kpi.accent {{border-top: 3px solid {YELLOW};}}
 .kpi.good, .kpi.navy, .kpi.gold {{border-top: 3px solid #303030;}}
 section[data-testid="stSidebar"] {{background: #171717; color: {PAPER}; border-right: 1px solid #303030;}}
-[data-testid="stSidebarLogo"] {{width: 150px !important; height: auto !important; max-width: calc(100% - 2.5rem);}}
+[data-testid="stSidebarLogo"] {{width: 150px !important; height: auto !important; max-width: calc(100% - 2.5rem); margin-top: 1rem !important;}}
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{color: {LIGHT_GREY};}}
 [data-testid="stSidebarNavLink"] {{border-left: 3px solid transparent; border-radius: 5px;}}
 [data-testid="stSidebarNavLink"][aria-current="page"] {{background: #292719; color: {YELLOW}; border-left-color: {YELLOW};}}
