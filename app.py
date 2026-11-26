@@ -13,6 +13,7 @@ import streamlit as st
 from plotly.subplots import make_subplots
 
 st.set_page_config(page_title="Productivity Detective", page_icon="🕵️", layout="wide")
+st.logo("logo_dark.png", size="large", icon_image="logo_dark.png")
 
 # scikit-learn's first import is slow; show feedback instead of a blank page on cold start.
 with st.spinner("🕵️ Warming up the detective (first load only)…"):
@@ -71,6 +72,7 @@ a {{color: {YELLOW};}}
 .kpi.accent {{border-top: 3px solid {YELLOW};}}
 .kpi.good, .kpi.navy, .kpi.gold {{border-top: 3px solid #303030;}}
 section[data-testid="stSidebar"] {{background: #171717; color: {PAPER}; border-right: 1px solid #303030;}}
+[data-testid="stSidebarLogo"] {{width: 150px !important; height: auto !important; max-width: calc(100% - 2.5rem);}}
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{color: {LIGHT_GREY};}}
 [data-testid="stSidebarNavLink"] {{border-left: 3px solid transparent; border-radius: 5px;}}
 [data-testid="stSidebarNavLink"][aria-current="page"] {{background: #292719; color: {YELLOW}; border-left-color: {YELLOW};}}
@@ -132,7 +134,6 @@ MODELS = get_models(DF)
 # Sidebar filters
 # --------------------------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("## Productivity Detective")
     st.caption("Virtual Hack 3 · Challenge 3")
     st.markdown("### Filters")
     min_d, max_d = DF["Observation_Date"].min().date(), DF["Observation_Date"].max().date()
