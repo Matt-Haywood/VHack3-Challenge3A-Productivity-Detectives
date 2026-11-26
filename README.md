@@ -12,19 +12,19 @@ python -m venv .venv
 
 Then open http://localhost:8501. The first load takes about 30 seconds while scikit-learn imports and the driver model trains. After that, results are cached.
 
-## Pages (mapped to the brief)
+## Pages
 
-| Page | Brief question |
+| Page | What it contains |
 |---|---|
-| Executive summary | The headline story, the two focus opportunities and pain points answered |
-| Q1 · Where are the gaps? | Crews (teams), work packages (departments), periods/trend, regions and projects |
-| Q2 · What drives them? | Rework, idle time, overtime (Simpson's paradox), incentives, design changes and site conditions, plus model driver importance and a genuine vs misleading scorecard |
-| Q3 · Recommendations | What-if simulator (rework cut, idle removal, overtime cap), impact waterfall and a pilot roadmap |
-| Q4 · Measuring success | KPI tree, SPC p-chart and a pilot sample-size calculator |
-| Persona lens | Tailored views for all seven personas |
-| Data & limitations | Data quality, caveats, dictionary and an explorer |
+| Overview | Filtered metrics, crew comparisons and productivity over time |
+| Compare patterns | Crew, work package, period, region and project comparisons |
+| Explore factors | Model feature importance, factor comparisons, correlations and model caveats |
+| Scenario explorer | User-adjustable input scenarios with model estimates against the filtered baseline |
+| Variation & study size | Process-variation chart and an interactive two-group sample-size estimator |
+| Data & methods | Data quality, caveats, dictionary and a cleaned-data explorer |
 
-Use the sidebar filters (dates, work package, crew, region, project type) to slice every page.
+Use the sidebar filters (dates, work package, crew, region, project type) to explore every page. Charts describe
+patterns and associations; scenario estimates are not causal forecasts or recommendations.
 
 ## Files
 

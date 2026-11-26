@@ -230,7 +230,7 @@ class DriverModels:
 
 def scenario(df: pd.DataFrame, rework_cut_pct: float, remove_idle: bool, overtime_cap: float | None,
              crews: list[str] | None, packages: list[str] | None) -> pd.DataFrame:
-    """Apply an intervention to the targeted rows of `df` and return the modified copy."""
+    """Apply hypothetical adjustments to selected rows and return the modified copy."""
     s = df.copy()
     mask = pd.Series(True, index=s.index)
     if crews:
